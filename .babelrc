@@ -1,0 +1,4 @@
+{
+  "presets": ["kyt-react", "stage-1"],
+  "plugins": ["transform-flow-strip-types", "transform-decorators-legacy"]
+}
