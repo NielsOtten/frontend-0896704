@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
 import MainStore from '../../stores/MainStore';
 import styles from './styles.scss';
 
-@observer
 class Settings extends Component {
   debugClickListener = () => {
     MainStore.toggleDebugging();

@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import { observer } from 'mobx-react';
 import 'tracking/build/tracking-min';
 import ColorStore from '../../stores/ColorStore';
 import MainStore from '../../stores/MainStore';
 import './styles.scss';
 
-@observer
 class Home extends Component {
   componentDidMount() {
     if(this.video && this.canvas) {
