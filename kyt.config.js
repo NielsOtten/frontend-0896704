@@ -12,7 +12,6 @@ module.exports = {
     baseConfig.plugins.push(new HtmlWebpackPlugin({
       template: 'src/index.ejs',
     }));
-    baseConfig.entry.main.push('whatwg-fetch');
     baseConfig.resolve.extensions.push('.jsx');
     // modify baseConfig based on the options
     return baseConfig;

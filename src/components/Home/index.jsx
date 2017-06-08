@@ -1,51 +1,53 @@
 import React, { Component } from 'react';
+import { observer } from 'mobx-react';
 import 'tracking/build/tracking-min';
+import ColorStore from '../../stores/ColorStore';
+import MainStore from '../../stores/MainStore';
 import './styles.scss';
 
+@observer
 class Home extends Component {
   componentDidMount() {
     if(this.video && this.canvas) {
       const context = this.canvas.getContext('2d');
       const tracking = window.tracking;
-      tracking.ColorTracker.registerColor('red', (r, g, b) => {
-        const dx = r - 219;
-        const dy = g - 90;
-        const dz = b - 133;
-
-        if((b - g) >= 100 && (r - g) >= 60) {
-          return true;
-        }
-        return (dx * dx) + (dy * dy) + (dz * dz) < 3500;
+      tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
+        const trackingColor = ColorStore.color;
+        return (r < trackingColor.r.max && r > trackingColor.r.min) &&
+          (g < trackingColor.g.max && g > trackingColor.g.min) &&
+          (b < trackingColor.b.max && b > trackingColor.b.min);
       });
-      const colors = new tracking.ColorTracker(['red']);
+      const color = new tracking.ColorTracker(['mainColor']);
 
-      colors.on('track', (event) => {
-        context.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        if(event.data.length === 0) {
-          // No colors were detected in this frame.
-        } else {
-          event.data.forEach((rect) => {
-            console.log(rect.x, rect.y, rect.width, rect.height);
-            context.strokeStyle = rect.color;
-            context.strokeRect(rect.x, rect.y, rect.width, rect.height);
-            context.font = '11px Helvetica';
-            context.fillStyle = '#fff';
-            context.fillText(`x: ${rect.x}px`, rect.x + rect.width + 5, rect.y + 11);
-            context.fillText(`y: ${rect.y}px`, rect.x + rect.width + 5, rect.y + 22);
-          });
-        }
-      });
+      // This event listener is for debugging only. It will draw a rectangle on the canvas to show you if it has found
+      // the mainColor.
+      if(MainStore.isDebugging) {
+        color.on('track', (event) => {
+          context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+          if(event.data.length > 0) {
+            event.data.forEach((rect) => {
+              context.strokeStyle = 'red';
+              context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+              context.font = '11px Helvetica';
+              context.fillStyle = '#000';
+              context.fillText(`x: ${rect.x}px`, rect.x + rect.width + 5, rect.y + 11);
+              context.fillText(`y: ${rect.y}px`, rect.x + rect.width + 5, rect.y + 22);
+            });
+          }
+        });
+      }
 
-      tracking.track(this.video, colors, { camera: true });
+      tracking.track(this.video, color, { camera: true });
     }
   }
 
   render() {
     return (
       <section>
-        bla
-        <video ref={v => this.video = v} id='myVideo' width='400' height='300' preload autoPlay loop muted />
-        <canvas ref={c => this.canvas = c} id='canvas' width='400' height='300' />
+        <div>
+          <video ref={v => this.video = v} id='myVideo' width='400' height='300' preload autoPlay loop muted />
+          <canvas ref={c => this.canvas = c} id='canvas' width='400' height='300' />
+        </div>
       </section>
     );
   }
