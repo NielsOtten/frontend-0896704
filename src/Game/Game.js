@@ -84,7 +84,7 @@ class Game {
   }
 
   static getGoodTargets() {
-    GameStore.goodTargets = GameStore.hits.filter(hit => !GameStore.targets.indexOf(hit.index)).length;
+    GameStore.goodTargets = GameStore.hits.filter(hit => GameStore.targets.includes(hit.index)).length;
   }
 
   /**
