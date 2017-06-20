@@ -1,3 +1,4 @@
+import GridVariables from './GridVariables';
 import Drawer from './Drawer';
 import ColorStore from '../stores/ColorStore';
 import MainStore from '../stores/MainStore';
@@ -12,13 +13,27 @@ class Game {
 
   startGame() {
     GameStore.playing = true;
-    this.setupGrid();
+    Game.setupGrid(this.canvas, this.drawer, 75);
+    window.requestAnimationFrame(this.update.bind(this));
+    this.addGriddToStore();
     this.startWatching();
     GameStore.targets = [this.pickRandomTile(), this.pickRandomTile()];
   }
 
+  /**
+   * Draw the canvas on every possible animationFrame.
+   */
+  update() {
+    this.drawer.draw();
+    window.requestAnimationFrame(this.update.bind(this));
+  }
+
   pickRandomTile() {
-    return Math.floor(Math.random() * 16);
+    let randomInt = Math.floor(Math.random() * 16);
+    while(GameStore.targets.includes(randomInt)) {
+      randomInt = Math.floor(Math.random() * 16);
+    }
+    return randomInt;
   }
 
   startWatching() {
@@ -59,6 +74,27 @@ class Game {
     });
   }
 
+  addGriddToStore() {
+    const grid = new GridVariables(this.canvas.width, this.canvas.height, 75);
+    GameStore.grid = [];
+    // Setup grid in store
+    for(let x = 0; x < 4; x += 1) {
+      for(let y = 0; y < 4; y += 1) {
+        const box = {
+          leftUpperCorner: {
+            x: grid.tileWidth * x,
+            y: grid.tileWidth * y,
+          },
+          rightBottomCorner: {
+            x: grid.tileWidth + (grid.tileWidth * x),
+            y: grid.tileWidth + (grid.tileWidth * y),
+          },
+        };
+        GameStore.grid.push(box);
+      }
+    }
+  }
+
   /*
    * I use a foreach here, because i wanted to keep the index. This index is needed to
    * get the grid from GameStore. The first choice to go would be filter, but then i
@@ -88,48 +124,22 @@ class Game {
   }
 
   /**
-   * This function will setup the grid over the canvas.
-   * The grid is the game board.
+   * This function will setup the grid over a given canvas.
    */
-  setupGrid() {
-    const screenWidth = 533;
-    const screenHeight = 400;
-    const blockWidth = 75;
-    const gridWidth = blockWidth * 4;
-    const gridHeight = blockWidth * 4;
-    const xPadding = (screenWidth - (blockWidth * 4)) / 2;
-    const yPadding = (screenHeight - (blockWidth * 4)) / 2;
-
-    this.drawer.addFunction((drawer) => {
-      for(let x = 0; x <= gridWidth; x += blockWidth) {
-        drawer.context.moveTo(xPadding + x, yPadding);
-        drawer.context.lineTo(xPadding + x, gridHeight + yPadding);
+  static setupGrid(canvas, newDrawer, tileWidth) {
+    const grid = new GridVariables(canvas.width, canvas.height, tileWidth);
+    newDrawer.addFunction((drawer) => {
+      for(let x = 0; x <= grid.gridWidth; x += grid.tileWidth) {
+        drawer.context.moveTo(grid.xPadding + x, grid.yPadding);
+        drawer.context.lineTo(grid.xPadding + x, grid.gridWidth + grid.yPadding);
       }
-      for(let x = 0; x <= gridHeight; x += blockWidth) {
-        drawer.context.moveTo(xPadding, 0.5 + x + yPadding);
-        drawer.context.lineTo(gridWidth + xPadding, 0.5 + x + yPadding);
+      for(let x = 0; x <= grid.gridWidth; x += grid.tileWidth) {
+        drawer.context.moveTo(grid.xPadding, 0.5 + x + grid.yPadding);
+        drawer.context.lineTo(grid.gridWidth + grid.xPadding, 0.5 + x + grid.yPadding);
       }
       drawer.context.strokeStyle = 'black';
       drawer.context.stroke();
     });
-
-    GameStore.grid = [];
-    // Setup grid in store
-    for(let x = 0; x < 4; x += 1) {
-      for(let y = 0; y < 4; y += 1) {
-        const box = {
-          leftUpperCorner: {
-            x: xPadding + (blockWidth * x),
-            y: yPadding + (blockWidth * y),
-          },
-          rightBottomCorner: {
-            x: xPadding + blockWidth + (blockWidth * x),
-            y: yPadding + blockWidth + (blockWidth * y),
-          },
-        };
-        GameStore.grid.push(box);
-      }
-    }
   }
 }
 
