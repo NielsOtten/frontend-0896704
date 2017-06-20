@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import Goal from './Goal';
-import Game from '../../Game/Game';
+import Game from '../../controllers/Game';
 import styles from './styles.scss';
 import GameStore from '../../stores/GameStore';
 

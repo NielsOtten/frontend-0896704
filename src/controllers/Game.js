@@ -1,5 +1,5 @@
 import { autorun } from 'mobx';
-import GridVariables from './GridVariables';
+import GridVariables from '../utils/GridVariables';
 import Drawer from './Drawer';
 import ColorStore from '../stores/ColorStore';
 import MainStore from '../stores/MainStore';
