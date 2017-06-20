@@ -17,4 +17,4 @@ export default class GridVariables {
   get gridWidth() {
     return this.tileWidth * this.tiles;
   }
-};
+}

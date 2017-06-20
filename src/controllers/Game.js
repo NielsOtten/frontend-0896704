@@ -24,7 +24,7 @@ class Game {
     this.startWatching();
 
     // TODO: Always 2 targets, need to make it more random.
-    GameStore.targets = [this.pickRandomTile(), this.pickRandomTile()];
+    GameStore.targets = [Game.pickRandomTile(), Game.pickRandomTile()];
 
     // This function is inside startgame function because i want to use be able to get this from game.
     this.checkwon = autorun(() => {
@@ -42,14 +42,6 @@ class Game {
   update() {
     this.drawer.draw();
     window.requestAnimationFrame(this.update.bind(this));
-  }
-
-  pickRandomTile() {
-    let randomInt = Math.floor(Math.random() * 16);
-    while(GameStore.targets.includes(randomInt)) {
-      randomInt = Math.floor(Math.random() * 16);
-    }
-    return randomInt;
   }
 
   startWatching() {
@@ -109,6 +101,14 @@ class Game {
         GameStore.grid.push(box);
       }
     }
+  }
+
+  static pickRandomTile() {
+    let randomInt = Math.floor(Math.random() * 16);
+    while(GameStore.targets.includes(randomInt)) {
+      randomInt = Math.floor(Math.random() * 16);
+    }
+    return randomInt;
   }
 
   /*

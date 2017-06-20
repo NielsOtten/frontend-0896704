@@ -6,3 +6,5 @@ class Player {
     return GameStore.points += 1;
   }
 }
+
+export default Player;
