@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { observer } from 'mobx-react';
+import 'tracking/build/tracking-min';
 import Goal from './Goal';
 import Game from '../../controllers/Game';
 import styles from './styles.scss';
