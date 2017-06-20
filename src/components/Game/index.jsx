@@ -40,8 +40,11 @@ class GameComponent extends Component {
             </div>
           </div>
         </div>
-        <video ref={v => this.video = v} id='myVideo' width='533' height='400' preload autoPlay loop muted />
-        <canvas ref={c => this.canvas = c} id='canvas' width='533' height='400' />
+        <div className={styles.game} />
+        <div className={styles.video}>
+          <video ref={v => this.video = v} id='myVideo' width='533' height='400' preload autoPlay loop muted />
+          <canvas ref={c => this.canvas = c} id='canvas' width='533' height='400' />
+        </div>
         <button onClick={this.startGame}>Start Game</button>
       </div>
     );

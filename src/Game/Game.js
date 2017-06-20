@@ -92,13 +92,15 @@ class Game {
    * The grid is the game board.
    */
   setupGrid() {
-    const xPadding = 86.5;
-    const yPadding = 20;
-    const blockWidth = 90;
+    const screenWidth = 533;
+    const screenHeight = 400;
+    const blockWidth = 75;
+    const gridWidth = blockWidth * 4;
+    const gridHeight = blockWidth * 4;
+    const xPadding = (screenWidth - (blockWidth * 4)) / 2;
+    const yPadding = (screenHeight - (blockWidth * 4)) / 2;
 
     this.drawer.addFunction((drawer) => {
-      const gridWidth = 360;
-      const gridHeight = 360;
       for(let x = 0; x <= gridWidth; x += blockWidth) {
         drawer.context.moveTo(xPadding + x, yPadding);
         drawer.context.lineTo(xPadding + x, gridHeight + yPadding);
