@@ -1,3 +1,4 @@
+import { autorun } from 'mobx';
 import GridVariables from './GridVariables';
 import Drawer from './Drawer';
 import ColorStore from '../stores/ColorStore';
@@ -18,6 +19,14 @@ class Game {
     this.addGriddToStore();
     this.startWatching();
     GameStore.targets = [this.pickRandomTile(), this.pickRandomTile()];
+    this.checkwon = autorun(() => {
+      console.log(GameStore.goodTargets, GameStore.targets.length);
+      if(GameStore.goodTargets >= GameStore.targets.length) {
+        if(this.color) { this.color.removeAllListeners(); }
+        GameStore.goodTargets = 0;
+        this.startGame();
+      }
+    });
   }
 
   /**
@@ -44,12 +53,13 @@ class Game {
         (g < trackingColor.g.max && g > trackingColor.g.min) &&
         (b < trackingColor.b.max && b > trackingColor.b.min);
     });
-    const color = new tracking.ColorTracker(['mainColor']);
+    this.color = new tracking.ColorTracker(['mainColor']);
+    tracking.track(this.video, this.color, { camera: true });
 
     // This event listener is for debugging only. It will draw a rectangle on the canvas to show you if it has found
     // the mainColor.
     if(MainStore.isDebugging) {
-      color.on('track', (event) => {
+      this.color.on('track', (event) => {
         if(event.data.length > 0) {
           event.data.forEach((rect) => {
             this.drawer.context.strokeStyle = 'red';
@@ -60,26 +70,28 @@ class Game {
           });
         }
       });
-
-      tracking.track(this.video, color, { camera: true });
     }
 
-    color.on('track', (event) => {
-      if(event.data.length > 0 && GameStore.grid.length > 0) {
-        event.data.forEach((object) => {
-          GameStore.hits = Game.getHit(object);
-          Game.getGoodTargets();
-        });
-      }
-    });
+    this.color.on('track', this.trackHit);
+  }
+
+  trackHit(event) {
+    if(event.data.length > 0 && GameStore.grid.length > 0) {
+      event.data.forEach((object) => {
+        // Get all the tiles which get hit.
+        GameStore.hits = Game.getHit(object);
+        // Check if there are any hits actually in the good target.
+        Game.getGoodTargets();
+      });
+    }
   }
 
   addGriddToStore() {
     const grid = new GridVariables(this.canvas.width, this.canvas.height, 75);
     GameStore.grid = [];
     // Setup grid in store
-    for(let x = 0; x < 4; x += 1) {
-      for(let y = 0; y < 4; y += 1) {
+    for(let y = 0; y < 4; y += 1) {
+      for(let x = 0; x < 4; x += 1) {
         const box = {
           leftUpperCorner: {
             x: grid.tileWidth * x,
@@ -103,10 +115,10 @@ class Game {
   static getHit(object) {
     const tiles = [];
     GameStore.grid.forEach((tile, index) => {
-      if(!(tile.rightBottomCorner.x < object.x ||
-        tile.leftUpperCorner.x > object.x + object.width ||
-        tile.rightBottomCorner.y < object.y ||
-        tile.leftUpperCorner.y > object.y + object.height)) {
+      if(!(tile.rightBottomCorner.x + 116.5 < object.x ||
+        tile.leftUpperCorner.x + 116.5 > object.x + object.width ||
+        tile.rightBottomCorner.y + 50 < object.y ||
+        tile.leftUpperCorner.y + 50 > object.y + object.height)) {
         tiles.push({
           index,
           tile,

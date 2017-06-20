@@ -10,6 +10,10 @@ class Drawer {
     this.drawArray.push(func);
   }
 
+  resetDrawer() {
+    this.drawArray = [];
+  }
+
   draw() {
     this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
     this.drawArray.forEach((func) => { func(this); });
