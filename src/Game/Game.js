@@ -5,8 +5,12 @@ import ColorStore from '../stores/ColorStore';
 import MainStore from '../stores/MainStore';
 import GameStore from '../stores/GameStore';
 
+/**
+ * This is the base class for Game, every functionality for the game will be handled here.
+ */
 class Game {
   constructor(canvas, video) {
+    this.tracking = window.tracking;
     this.canvas = canvas;
     this.video = video;
     this.drawer = new Drawer(canvas);
@@ -18,9 +22,12 @@ class Game {
     window.requestAnimationFrame(this.update.bind(this));
     this.addGriddToStore();
     this.startWatching();
+
+    // TODO: Always 2 targets, need to make it more random.
     GameStore.targets = [this.pickRandomTile(), this.pickRandomTile()];
+
+    // This function is inside startgame function because i want to use be able to get this from game.
     this.checkwon = autorun(() => {
-      console.log(GameStore.goodTargets, GameStore.targets.length);
       if(GameStore.goodTargets >= GameStore.targets.length) {
         if(this.color) { this.color.removeAllListeners(); }
         GameStore.goodTargets = 0;
@@ -46,15 +53,14 @@ class Game {
   }
 
   startWatching() {
-    const tracking = window.tracking;
-    tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
+    this.tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
       const trackingColor = ColorStore.color;
       return (r < trackingColor.r.max && r > trackingColor.r.min) &&
         (g < trackingColor.g.max && g > trackingColor.g.min) &&
         (b < trackingColor.b.max && b > trackingColor.b.min);
     });
-    this.color = new tracking.ColorTracker(['mainColor']);
-    tracking.track(this.video, this.color, { camera: true });
+    this.color = new this.tracking.ColorTracker(['mainColor']);
+    this.tracking.track(this.video, this.color, { camera: true });
 
     // This event listener is for debugging only. It will draw a rectangle on the canvas to show you if it has found
     // the mainColor.
@@ -72,18 +78,16 @@ class Game {
       });
     }
 
-    this.color.on('track', this.trackHit);
-  }
-
-  trackHit(event) {
-    if(event.data.length > 0 && GameStore.grid.length > 0) {
-      event.data.forEach((object) => {
-        // Get all the tiles which get hit.
-        GameStore.hits = Game.getHit(object);
-        // Check if there are any hits actually in the good target.
-        Game.getGoodTargets();
-      });
-    }
+    this.color.on('track', (event) => {
+      if(event.data.length > 0 && GameStore.grid.length > 0) {
+        event.data.forEach((object) => {
+          // Get all the tiles which get hit.
+          GameStore.hits = Game.getHit(object);
+          // Check if there are any hits actually in the good target.
+          GameStore.getGoodTargets();
+        });
+      }
+    });
   }
 
   addGriddToStore() {
@@ -126,13 +130,6 @@ class Game {
       }
     });
     return tiles;
-
-    // Ratio
-  // .map(box => ({ box, ratio: Math.max(0, Math.min(box.rightBottomCorner.x, object.x + object.width) - Math.max(box.leftUpperCorner.x, object.x)) * Math.max(0, Math.min(box.rightBottomCorner.y, object.y + object.height) - Math.max(box.leftUpperCorner.y, object.y)) }));
-  }
-
-  static getGoodTargets() {
-    GameStore.goodTargets = GameStore.hits.filter(hit => GameStore.targets.includes(hit.index)).length;
   }
 
   /**

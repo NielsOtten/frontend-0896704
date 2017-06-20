@@ -6,6 +6,10 @@ class GameStore {
   @observable hits = [];
   @observable targets = [];
   @observable goodTargets = 0;
+
+  getGoodTargets() {
+    this.goodTargets = this.hits.filter(hit => this.targets.includes(hit.index)).length;
+  }
 }
 
 
