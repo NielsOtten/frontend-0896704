@@ -2,13 +2,14 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { autorun } from 'mobx';
 import styles from './styles.scss';
-import Game from '../../controllers/Game';
+import Game from '../../controllers/NewGame';
 import Drawer from '../../controllers/Drawer';
 import GameStore from '../../stores/GameStore';
 
 @observer
 class Goal extends Component {
   componentDidMount() {
+    console.log(this.props);
     if(this.canvas) {
       this.drawGoals = autorun(() => {
         if(!this.drawer) this.drawer = new Drawer(this.canvas);

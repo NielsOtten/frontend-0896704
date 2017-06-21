@@ -1,7 +1,6 @@
 import { observable } from 'mobx';
 
 class GameStore {
-  @observable playing = false;
   @observable targets = [];
   @observable goodTargets = 0;
   @observable points = 0;

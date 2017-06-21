@@ -1,17 +1,19 @@
-import { autorun } from 'mobx';
-import Player from './Player';
-import GridVariables from '../utils/GridVariables';
 import Drawer from './Drawer';
+import GridVariables from '../utils/GridVariables';
 import ColorStore from '../stores/ColorStore';
-import MainStore from '../stores/MainStore';
 import GameStore from '../stores/GameStore';
 
 /**
- * This is the base class for Game, every functionality for the game will be handled here.
+ * Game class, every functionality for a Game will be handled here.
  */
 class Game {
-  tracking = false;
+  static tileWidth = 75;
+  active = false;
+  grid = [];
 
+  /**
+   * Constructor for Game class.
+   */
   constructor(canvas, video) {
     this.tracking = window.tracking;
     this.canvas = canvas;
@@ -20,41 +22,16 @@ class Game {
   }
 
   startGame() {
-    Game.setupGrid(this.canvas, this.drawer, 75);
-    if(!this.animation) window.requestAnimationFrame(this.update.bind(this));
+    Game.setupGrid(this.canvas, this.drawer, Game.tileWidth);
     this.addGridToStore();
-    this.startWatching();
+    this.startWatcher();
     this.startTimer();
+    this.active = true;
 
     // TODO: Always 2 targets, need to make it more random.
     GameStore.targets = [Game.pickRandomTile(), Game.pickRandomTile()];
 
-    // This function is inside startgame function because i want to use be able to get this from game.
-    this.checkStatus = autorun(() => {
-      if(GameStore.goodTargets >= GameStore.targets.length) {
-        if(this.color) this.color.removeAllListeners();
-        if(this.videoTrack) this.videoTrack.stop();
-        this.stopTimer();
-        Player.addPoint();
-        GameStore.goodTargets = 0;
-        this.startGame();
-      }
-      if(GameStore.targetTime <= GameStore.timePassed) {
-        if(this.color) this.color.removeAllListeners();
-        if(this.videoTrack) this.videoTrack.stop();
-        this.stopTimer();
-        GameStore.goodTargets = 0;
-        this.startGame();
-      }
-    });
-  }
-
-  /**
-   * Draw the canvas on every possible animationFrame.
-   */
-  update() {
-    this.drawer.draw();
-    this.animation = window.requestAnimationFrame(this.update.bind(this));
+    if(!this.animation) window.requestAnimationFrame(this.update.bind(this));
   }
 
   startTimer() {
@@ -68,33 +45,26 @@ class Game {
     clearInterval(this.interval);
   }
 
-  startWatching() {
-    if(!this.color && !this.videoTrack) {
-      this.tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
-        const trackingColor = ColorStore.color;
-        return (r < trackingColor.r.max && r > trackingColor.r.min) &&
-          (g < trackingColor.g.max && g > trackingColor.g.min) &&
-          (b < trackingColor.b.max && b > trackingColor.b.min);
-      });
-      this.color = new this.tracking.ColorTracker(['mainColor']);
-      this.videoTrack = this.tracking.track(this.video, this.color, { camera: true });
-    }
+  /**
+   * Draw the canvas on every possible animationFrame.
+   */
+  update() {
+    this.drawer.draw();
+    this.animation = window.requestAnimationFrame(this.update.bind(this));
+  }
 
-    // This event listener is for debugging only. It will draw a rectangle on the canvas to show you if it has found
-    // the mainColor.
-    if(MainStore.isDebugging) {
-      this.color.on('track', (event) => {
-        if(event.data.length > 0) {
-          event.data.forEach((rect) => {
-            this.drawer.context.strokeStyle = 'red';
-            this.drawer.context.strokeRect(rect.x, rect.y, rect.width, rect.height);
-            this.drawer.context.fillStyle = '#000';
-            this.drawer.context.fillText(`x: ${rect.x}px`, rect.x + rect.width + 5, rect.y + 11);
-            this.drawer.context.fillText(`y: ${rect.y}px`, rect.x + rect.width + 5, rect.y + 22);
-          });
-        }
-      });
-    }
+  /**
+   * This function will start watching the video for the color i just registered.
+   */
+  startWatcher() {
+    this.tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
+      const trackingColor = ColorStore.color;
+      return (r < trackingColor.r.max && r > trackingColor.r.min) &&
+        (g < trackingColor.g.max && g > trackingColor.g.min) &&
+        (b < trackingColor.b.max && b > trackingColor.b.min);
+    });
+    this.color = new this.tracking.ColorTracker(['mainColor']);
+    this.videoTrack = this.tracking.track(this.video, this.color, { camera: true });
 
     this.color.on('track', (event) => {
       if(event.data.length > 0 && GameStore.grid.length > 0) {
@@ -108,9 +78,29 @@ class Game {
     });
   }
 
+  stopGame() {
+    if(this.color) this.color.removeAllListeners();
+    if(this.videoTrack) this.videoTrack.stop();
+    GameStore.goodTargets = 0;
+    this.drawer.resetDrawer();
+    this.stopTimer();
+    this.active = false;
+  }
+
+  static pickRandomTile() {
+    let randomInt = Math.floor(Math.random() * 16);
+    while(GameStore.targets.includes(randomInt)) {
+      randomInt = Math.floor(Math.random() * 16);
+    }
+    return randomInt;
+  }
+
+  /**
+   * Adds grid to the store, this is needed for the
+   */
   addGridToStore() {
     const grid = new GridVariables(this.canvas.width, this.canvas.height, 75);
-    GameStore.grid = [];
+    const tiles = [];
     // Setup grid in store
     for(let y = 0; y < 4; y += 1) {
       for(let x = 0; x < 4; x += 1) {
@@ -124,17 +114,10 @@ class Game {
             y: grid.tileWidth + (grid.tileWidth * y),
           },
         };
-        GameStore.grid.push(box);
+        tiles.push(box);
       }
     }
-  }
-
-  static pickRandomTile() {
-    let randomInt = Math.floor(Math.random() * 16);
-    while(GameStore.targets.includes(randomInt)) {
-      randomInt = Math.floor(Math.random() * 16);
-    }
-    return randomInt;
+    GameStore.grid = tiles;
   }
 
   /*
@@ -159,7 +142,12 @@ class Game {
   }
 
   /**
-   * This function will setup the grid over a given canvas.
+   * This will setup a grid and add it to the local grid variable.
+   * It will add the elements it needs to draw to a drawer so the drawer will handle
+   * the canvas drawing.
+   * @param {Element} canvas
+   * @param {Drawer} newDrawer
+   * @param {int} tileWidth
    */
   static setupGrid(canvas, newDrawer, tileWidth) {
     const grid = new GridVariables(canvas.width, canvas.height, tileWidth);
