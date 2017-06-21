@@ -12,6 +12,12 @@
   z-index: 1;
 }
 
+.time, .points {
+  position: relative;
+  font-size: 20px;
+  z-index: 2;
+}
+
 .video {
   @include clearfix;
 

@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { autorun } from 'mobx';
 import { observer } from 'mobx-react';
 import 'tracking/build/tracking-min';
 import Goal from './Goal';
@@ -35,6 +36,8 @@ class GameComponent extends Component {
   render() {
     return (
       <div>
+        <div className={styles.time}>Tijd over: {GameStore.targetTime - GameStore.timePassed}</div>
+        <div className={styles.points}>Punten: {GameStore.points}</div>
         { GameStore.targets.length > 0 ? <Goal /> : ''}
         <div className={styles.game} />
         <div className={styles.video}>

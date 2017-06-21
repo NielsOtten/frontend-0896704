@@ -1,4 +1,5 @@
 import { autorun } from 'mobx';
+import Player from './Player';
 import GridVariables from '../utils/GridVariables';
 import Drawer from './Drawer';
 import ColorStore from '../stores/ColorStore';
@@ -9,6 +10,8 @@ import GameStore from '../stores/GameStore';
  * This is the base class for Game, every functionality for the game will be handled here.
  */
 class Game {
+  tracking = false;
+
   constructor(canvas, video) {
     this.tracking = window.tracking;
     this.canvas = canvas;
@@ -19,17 +22,28 @@ class Game {
   startGame() {
     GameStore.playing = true;
     Game.setupGrid(this.canvas, this.drawer, 75);
-    window.requestAnimationFrame(this.update.bind(this));
+    if(!this.animation) window.requestAnimationFrame(this.update.bind(this));
     this.addGriddToStore();
     this.startWatching();
+    this.startTimer();
 
     // TODO: Always 2 targets, need to make it more random.
     GameStore.targets = [Game.pickRandomTile(), Game.pickRandomTile()];
 
     // This function is inside startgame function because i want to use be able to get this from game.
-    this.checkwon = autorun(() => {
+    this.checkStatus = autorun(() => {
       if(GameStore.goodTargets >= GameStore.targets.length) {
-        if(this.color) { this.color.removeAllListeners(); }
+        if(this.color) this.color.removeAllListeners();
+        if(this.videoTrack) this.videoTrack.stop();
+        this.stopTimer();
+        Player.addPoint();
+        GameStore.goodTargets = 0;
+        this.startGame();
+      }
+      if(GameStore.targetTime <= GameStore.timePassed) {
+        if(this.color) this.color.removeAllListeners();
+        if(this.videoTrack) this.videoTrack.stop();
+        this.stopTimer();
         GameStore.goodTargets = 0;
         this.startGame();
       }
@@ -41,18 +55,31 @@ class Game {
    */
   update() {
     this.drawer.draw();
-    window.requestAnimationFrame(this.update.bind(this));
+    this.animation = window.requestAnimationFrame(this.update.bind(this));
+  }
+
+  startTimer() {
+    GameStore.timePassed = 0;
+    this.interval = setInterval(() => {
+      GameStore.timePassed += 1;
+    }, 1000);
+  }
+
+  stopTimer() {
+    clearInterval(this.interval);
   }
 
   startWatching() {
-    this.tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
-      const trackingColor = ColorStore.color;
-      return (r < trackingColor.r.max && r > trackingColor.r.min) &&
-        (g < trackingColor.g.max && g > trackingColor.g.min) &&
-        (b < trackingColor.b.max && b > trackingColor.b.min);
-    });
-    this.color = new this.tracking.ColorTracker(['mainColor']);
-    this.tracking.track(this.video, this.color, { camera: true });
+    if(!this.color && !this.videoTrack) {
+      this.tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
+        const trackingColor = ColorStore.color;
+        return (r < trackingColor.r.max && r > trackingColor.r.min) &&
+          (g < trackingColor.g.max && g > trackingColor.g.min) &&
+          (b < trackingColor.b.max && b > trackingColor.b.min);
+      });
+      this.color = new this.tracking.ColorTracker(['mainColor']);
+      this.videoTrack = this.tracking.track(this.video, this.color, { camera: true });
+    }
 
     // This event listener is for debugging only. It will draw a rectangle on the canvas to show you if it has found
     // the mainColor.
@@ -137,6 +164,7 @@ class Game {
    */
   static setupGrid(canvas, newDrawer, tileWidth) {
     const grid = new GridVariables(canvas.width, canvas.height, tileWidth);
+    newDrawer.resetDrawer();
     newDrawer.addFunction((drawer) => {
       for(let x = 0; x <= grid.gridWidth; x += grid.tileWidth) {
         drawer.context.moveTo(grid.xPadding + x, grid.yPadding);
