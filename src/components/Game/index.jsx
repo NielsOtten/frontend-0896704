@@ -6,9 +6,12 @@ import Goal from './Goal';
 import Board from '../../controllers/Board';
 import styles from './styles.scss';
 import GameStore from '../../stores/GameStore';
+import intro from '../../sound/intro-game.mp3';
 
 @observer
 class GameComponent extends Component {
+  @observable timer = 0;
+
   componentDidMount() {
     this.setupCamera();
     this.board = new Board(this.canvas, this.video);
@@ -39,7 +42,17 @@ class GameComponent extends Component {
 
   startGame = () => {
     this.board.newGame();
-    this.board.startGame();
+    const introAudio = new Audio(intro);
+    introAudio.play();
+    introAudio.onended = () => {
+      this.interval = setInterval(() => {
+        if(this.timer === 2) {
+          clearInterval(this.interval);
+          this.board.startGame();
+        }
+        this.timer += 1;
+      }, 1000);
+    };
   };
 
   render() {
@@ -49,6 +62,7 @@ class GameComponent extends Component {
         <div className={styles.points}>Punten: {GameStore.points}</div>
         { this.games }
         <div className={styles.game} />
+        <div className={styles.timer}>{this.timer}</div>
         <div className={styles.video}>
           <video ref={v => this.video = v} id='myVideo' width='533' height='400' preload autoPlay loop muted />
           <canvas ref={c => this.canvas = c} id='canvas' width='533' height='400' />
