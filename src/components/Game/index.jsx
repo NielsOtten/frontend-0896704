@@ -26,7 +26,8 @@ class GameComponent extends Component {
    * This function is used to start the camera before the game starts.
    */
   setupCamera() {
-    window.navigator.getUserMedia({
+    const userMedia = navigator.getUserMedia || navigator.webkitGetUserMedia || navigator.mozGetUserMedia;
+    userMedia.call(navigator, {
       video: true,
     }, (stream) => {
       try {
