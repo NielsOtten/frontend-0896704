@@ -10,3 +10,7 @@ Ik heb daarom een spel gemaakt die de kinderen hierbij kan helpen. Het spel werk
 
 De kinderen krijgen op een computerscherm een soort schaakbord te zien. Op dit schaakbord is aangegeven op welke plek ze een pittenzak moeten gooien. Deze pittenzakken moeten ze gooien op een mat die bij het computerscherm ligt. Om te meten of de kinderen daadwerkelijk een pittenzak op de goede plek op de mat hebben gegooid gebruik ik een camera. De camera meet of op de goede plek kleuren zichtbaar zijn. Wanneer de kinderen de puzzel hebben opgelost krijgen ze feedback of ze het goed of verkeerd hebben gedaan. Het spel zal zich hierna weer herhalen.
 
+
+
+![alt text](src/public/screenshot.png "Screenshot game")
+
