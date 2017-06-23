@@ -9,7 +9,6 @@ import GameStore from '../stores/GameStore';
 class Game {
   static tileWidth = 75;
   active = false;
-  grid = [];
 
   /**
    * Constructor for Game class.
@@ -27,13 +26,13 @@ class Game {
     this.startWatcher();
     this.startTimer();
     this.active = true;
-
-    // TODO: Always 2 targets, need to make it more random.
     GameStore.targets = [Game.pickRandomTile(), Game.pickRandomTile()];
-
     if(!this.animation) window.requestAnimationFrame(this.update.bind(this));
   }
 
+  /**
+   * This function starts the timer.
+   */
   startTimer() {
     GameStore.timePassed = 0;
     this.interval = setInterval(() => {
@@ -41,6 +40,9 @@ class Game {
     }, 1000);
   }
 
+  /**
+   * Clears interval and stops the timer.
+   */
   stopTimer() {
     clearInterval(this.interval);
   }
@@ -57,15 +59,19 @@ class Game {
    * This function will start watching the video for the color i just registered.
    */
   startWatcher() {
+    // Register the main color to trackingjs.
     this.tracking.ColorTracker.registerColor('mainColor', (r, g, b) => {
       const trackingColor = ColorStore.color;
       return (r < trackingColor.r.max && r > trackingColor.r.min) &&
         (g < trackingColor.g.max && g > trackingColor.g.min) &&
         (b < trackingColor.b.max && b > trackingColor.b.min);
     });
+    // Start tracking for main color.
     this.color = new this.tracking.ColorTracker(['mainColor']);
+    // Add tracking to the current video element.
     this.videoTrack = this.tracking.track(this.video, this.color, { camera: true });
 
+    // When tracking.js finds given color (MainColor) it will call the callback.
     this.color.on('track', (event) => {
       if(event.data.length > 0 && GameStore.grid.length > 0) {
         event.data.forEach((object) => {
@@ -78,6 +84,10 @@ class Game {
     });
   }
 
+  /**
+   * Remove all listeners and tracking.
+   * If you don't disable all listeners and tracking the game will get laggy really fast.
+   */
   stopGame() {
     if(this.color) this.color.removeAllListeners();
     if(this.videoTrack) this.videoTrack.stop();
@@ -87,6 +97,10 @@ class Game {
     this.active = false;
   }
 
+  /**
+   * Pick a random number between 0 and 16.
+   * @returns {number} randomInt
+   */
   static pickRandomTile() {
     let randomInt = Math.floor(Math.random() * 16);
     while(GameStore.targets.includes(randomInt)) {
@@ -96,7 +110,7 @@ class Game {
   }
 
   /**
-   * Adds grid to the store, this is needed for the
+   * Adds grid to the store. This grid is needed for calculating hits and in Goal.jsx.
    */
   addGridToStore() {
     const grid = new GridVariables(this.canvas.width, this.canvas.height, 75);
@@ -120,10 +134,13 @@ class Game {
     GameStore.grid = tiles;
   }
 
-  /*
+  /**
    * I use a foreach here, because i wanted to keep the index. This index is needed to
    * get the grid from GameStore. The first choice to go would be filter, but then i
    * won't keep the index.
+   *
+   * @param object The object that is tracked.
+   * @returns {Array}
    */
   static getHit(object) {
     const tiles = [];
