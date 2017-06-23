@@ -5,6 +5,7 @@ class GameStore {
   @observable goodTargets = 0;
   @observable points = 0;
   @observable timePassed = 0;
+  @observable playing = false;
   targetTime = 30;
   hits = [];
   grid = [];

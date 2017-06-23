@@ -1,3 +1,4 @@
+/* eslint-disable prefer-template */
 import React, { Component } from 'react';
 import { observable, autorun } from 'mobx';
 import { observer } from 'mobx-react';
@@ -10,8 +11,6 @@ import intro from '../../sound/intro-game.mp3';
 
 @observer
 class GameComponent extends Component {
-  @observable timer = 0;
-
   componentDidMount() {
     this.setupCamera();
     this.board = new Board(this.canvas, this.video);
@@ -39,6 +38,8 @@ class GameComponent extends Component {
   }
 
   @observable games = [];
+  @observable timer = 4;
+  @observable displayTimer = false;
 
   startGame = () => {
     this.board.newGame();
@@ -46,11 +47,14 @@ class GameComponent extends Component {
     introAudio.play();
     introAudio.onended = () => {
       this.interval = setInterval(() => {
-        if(this.timer === 2) {
+        if(this.timer === 0) {
           clearInterval(this.interval);
           this.board.startGame();
+          this.displayTimer = false;
+          return;
         }
-        this.timer += 1;
+        this.displayTimer = true;
+        this.timer -= 1;
       }, 1000);
     };
   };
@@ -62,7 +66,7 @@ class GameComponent extends Component {
         <div className={styles.points}>Punten: {GameStore.points}</div>
         { this.games }
         <div className={styles.game} />
-        <div className={styles.timer}>{this.timer}</div>
+        <div className={styles.timer + ' ' + (this.displayTimer ? styles.active : '')}>{this.timer}</div>
         <div className={styles.video}>
           <video ref={v => this.video = v} id='myVideo' width='533' height='400' preload autoPlay loop muted />
           <canvas ref={c => this.canvas = c} id='canvas' width='533' height='400' />

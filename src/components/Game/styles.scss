@@ -12,10 +12,39 @@
   z-index: 1;
 }
 
-.time, .points {
+.time,
+.points {
   position: relative;
   font-size: 20px;
   z-index: 2;
+  width: 200px;
+  margin: 0 auto;
+  background-color: #fff;
+  text-align: center;
+  padding: 10px;
+}
+
+.timer {
+  display: block;
+  position: absolute;
+  font-size: 120px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0);
+  z-index: 2;
+  background: white;
+  box-sizing: border-box;
+  width: 120px;
+  height: 120px;
+  text-align: center;
+  border-radius: 100%;
+  transition: all ease-in-out 0.3s;
+  visibility: hidden;
+
+  &.active {
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 .video {
@@ -71,12 +100,18 @@
 
 .goal {
   background-color: #dad99b;
-  display: inline-block;
-  position: relative;
+  position: absolute;
   z-index: 2;
+  left: 25%;
+  top: 50%;
+  transform: translate(-25%, -50%);
 
   canvas {
     position: relative;
     z-index: 2;
   }
+}
+
+.paper {
+  position: absolute;
 }
