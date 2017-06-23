@@ -1,5 +1,5 @@
 import { observable, autorun } from 'mobx';
-import Game from './NewGame';
+import Game from './Game';
 import GameStore from '../stores/GameStore';
 import Player from './Player';
 import lekkerBezigAudio from '../sound/Jij-bent-lekker-bezig_.mp3';

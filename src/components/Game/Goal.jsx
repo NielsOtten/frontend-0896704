@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { observer } from 'mobx-react';
 import { autorun } from 'mobx';
 import styles from './styles.scss';
-import Game from '../../controllers/NewGame';
+import Game from '../../controllers/Game';
 import Drawer from '../../controllers/Drawer';
 import GameStore from '../../stores/GameStore';
 
