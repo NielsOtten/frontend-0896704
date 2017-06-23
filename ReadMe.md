@@ -1,7 +1,10 @@
 # Frond-end development 2017
 
 Stud: Niels Otten
+
 nr: 0896704
+
+link naar opdracht: https://colorrecog.herokuapp.com/
 
 ## Beschrijving
 Ik heb mijn front-end development opdracht gecombineerd met de opdracht van Dev This. Mijn onderwerp bij Dev This is kinderen met DCD. Kinderen met deze aandoening hebben een leerprobleem, hierbij moet je niet gelijk denken aan leerproblemen bij taal en rekenen, maar wel bij het leren van motorische vaardigheden.
