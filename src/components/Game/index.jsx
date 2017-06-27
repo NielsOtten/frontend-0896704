@@ -69,8 +69,8 @@ class GameComponent extends Component {
         <div className={styles.game} />
         <div className={styles.timer + ' ' + (this.displayTimer ? styles.active : '')}>{this.timer}</div>
         <div className={styles.video}>
-          <video ref={v => this.video = v} id='myVideo' width='533' height='400' preload autoPlay loop muted />
-          <canvas ref={c => this.canvas = c} id='canvas' width='533' height='400' />
+          <video className={styles.canvasGame} ref={v => this.video = v} id='myVideo' width='533' height='400' preload autoPlay loop muted />
+          <canvas className={styles.videoGame} ref={c => this.canvas = c} id='canvas' width='533' height='400' />
         </div>
         { !GameStore.playing ? <button className={styles.startGame} onClick={this.startGame}>Start spel</button> : '' }
       </div>

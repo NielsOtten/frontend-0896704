@@ -26,7 +26,7 @@ class Game {
     this.startWatcher();
     this.startTimer();
     this.active = true;
-    GameStore.targets = [Game.pickRandomTile(), Game.pickRandomTile()];
+    GameStore.targets = [Game.pickRandomTile()];
     if(!this.animation) window.requestAnimationFrame(this.update.bind(this));
   }
 

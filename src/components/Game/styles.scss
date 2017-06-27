@@ -85,6 +85,7 @@
   canvas {
     position: absolute;
     left: 0;
+    transform: rotate(180deg);
   }
 }
 
@@ -114,4 +115,8 @@
 
 .paper {
   position: absolute;
+}
+
+.canvasGame, .canvasVideo {
+  transform: rotate(180deg);
 }
